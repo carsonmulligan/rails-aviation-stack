@@ -1,7 +1,23 @@
-# This file should contain all the record creation needed to seed the database with its default values.
-# The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
-#
-# Examples:
-#
-#   movies = Movie.create([{ name: 'Star Wars' }, { name: 'Lord of the Rings' }])
-#   Character.create(name: 'Luke', movie: movies.first)
+require 'net/http'
+require 'json'
+
+params = {
+  :access_key => ENV['ACCESS_KEY']
+}
+uri = URI('https://api.aviationstack.com/v1/flights')
+uri.query = URI.encode_www_form(params)
+json = Net::HTTP.get(uri)
+api_response = JSON.parse(json)
+
+for flight in api_response['results']
+    unless flight['live']['is_ground']
+        puts sprintf("%s flight %s from %s (%s) to %s (%s) is in the air.",
+            flight['airline']['name'],
+            flight['flight']['iata'],
+            flight['departure']['airport'],
+            flight['departure']['iata'],
+            flight['arrival']['airport'],
+            flight['arrival']['iata']
+        )
+    end
+end
